@@ -2,6 +2,12 @@
 
 require 'openssl'
 
+if defined?(OpenSSL::Provider)
+  # when built against openssl 3+ DES cipher will be in legacy provider which is not loaded by default
+  # when built against openssl 1.1 DES cipher is just available and whole concept of providers does not exist
+  OpenSSL::Provider.load('legacy')
+end
+
 module NTLM
   module Util
 
@@ -54,7 +60,7 @@ module NTLM
       keys = create_des_keys(key[0, key_length])
 
       result = ''
-      cipher = OpenSSL::Cipher::DES.new
+      cipher = OpenSSL::Cipher::DES.new(:ecb)
       keys.each do |k|
         cipher.encrypt
         cipher.key = k
